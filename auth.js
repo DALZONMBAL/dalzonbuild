@@ -14,10 +14,16 @@ function setMode(next){
  title.textContent=register?"Créez votre compte.":"Bienvenue.";
  subtitle.textContent=register?"Commencez à créer vos sites professionnels.":"Connectez-vous pour gérer vos sites.";
  submit.innerHTML=register?"Créer mon compte <span>→</span>":"Se connecter <span>→</span>";
- error.textContent="";
+ if(!error.dataset.keep) error.textContent="";
+ error.dataset.keep="";
 }
 document.querySelectorAll(".tab").forEach(tab=>tab.addEventListener("click",()=>setMode(tab.dataset.mode)));
 setMode(mode);
+
+function showError(message){
+ error.textContent=message;
+ error.dataset.keep="1";
+}
 
 async function authRequest(path,body){
  const response=await fetch(SUPABASE_URL+"/auth/v1/"+path,{
@@ -30,35 +36,56 @@ async function authRequest(path,body){
  return data;
 }
 
-// Après confirmation de l'e-mail, Supabase peut renvoyer la session dans le fragment de l'URL.
+// Retour après confirmation e-mail.
+// Supabase place normalement la session dans le fragment #access_token=...&refresh_token=...
 (function handleEmailConfirmation(){
  const hash=new URLSearchParams(location.hash.replace(/^#/,""));
  const accessToken=hash.get("access_token");
  const refreshToken=hash.get("refresh_token");
+ const errorCode=hash.get("error_code");
+ const errorDescription=hash.get("error_description");
+
  if(accessToken){
   localStorage.setItem("dalzon_access_token",accessToken);
   localStorage.setItem("dalzon_refresh_token",refreshToken||"");
   history.replaceState(null,"",location.pathname+location.search);
   location.href="dashboard.html";
+  return;
+ }
+
+ if(errorCode||errorDescription){
+  history.replaceState(null,"",location.pathname+location.search);
+  setMode("login");
+  showError(decodeURIComponent((errorDescription||"La confirmation de l'adresse e-mail a échoué.").replace(/\+/g," ")));
  }
 })();
 
 form.addEventListener("submit",async e=>{
- e.preventDefault(); error.textContent="";
- submit.disabled=true; submit.textContent=mode==="register"?"Création...":"Connexion...";
+ e.preventDefault();
+ error.textContent="";
+ error.dataset.keep="";
+ submit.disabled=true;
+ submit.textContent=mode==="register"?"Création...":"Connexion...";
  try{
   const email=document.getElementById("email").value.trim();
   const password=document.getElementById("password").value;
   const name=document.getElementById("name").value.trim();
+
   if(mode==="register"){
-   const data=await authRequest("signup",{email,password,data:{full_name:name},options:{emailRedirectTo:"https://www.dalzonbuild.com/auth.html"}});
+   const data=await authRequest("signup",{
+    email,
+    password,
+    data:{full_name:name},
+    options:{emailRedirectTo:"https://www.dalzonbuild.com/auth.html"}
+   });
+
    if(data.access_token){
     localStorage.setItem("dalzon_access_token",data.access_token);
     localStorage.setItem("dalzon_refresh_token",data.refresh_token||"");
     location.href="dashboard.html";
    }else{
-    error.textContent="Compte créé. Vérifie ton adresse e-mail puis connecte-toi.";
     setMode("login");
+    showError("Compte créé. Vérifie ton adresse e-mail, puis reviens ici pour te connecter.");
    }
   }else{
    const data=await authRequest("token?grant_type=password",{email,password});
@@ -66,6 +93,14 @@ form.addEventListener("submit",async e=>{
    localStorage.setItem("dalzon_refresh_token",data.refresh_token||"");
    location.href="dashboard.html";
   }
- }catch(err){error.textContent=err.message||"Une erreur est survenue.";}
- finally{submit.disabled=false;setMode(mode);}
+ }catch(err){
+  let message=err.message||"Une erreur est survenue.";
+  if(message.toLowerCase().includes("email not confirmed")){
+   message="Ton adresse e-mail n'est pas encore confirmée. Clique d'abord sur le lien reçu par e-mail.";
+  }
+  showError(message);
+ }finally{
+  submit.disabled=false;
+  setMode(mode);
+ }
 });
