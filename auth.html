@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html lang="fr"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="description" content="Connexion et inscription — DALZON BUILD"><title>Compte — DALZON BUILD</title><link rel="stylesheet" href="auth.css"></head>
+<body>
+<main class="auth-shell">
+  <a class="brand" href="index.html"><span class="mark">DB</span><span>DALZON <b>BUILD</b></span></a>
+  <section class="auth-card">
+    <div class="tabs"><button class="tab active" data-mode="login">Connexion</button><button class="tab" data-mode="register">Créer un compte</button></div>
+    <div class="intro"><span class="eyebrow">DALZON BUILD</span><h1 id="title">Bienvenue.</h1><p id="subtitle">Connectez-vous pour gérer vos sites.</p></div>
+    <form id="authForm">
+      <label id="nameWrap" class="hidden">Nom complet<input id="name" type="text" autocomplete="name" placeholder="Votre nom"></label>
+      <label>Email<input id="email" type="email" autocomplete="email" placeholder="vous@exemple.com" required></label>
+      <label>Mot de passe<input id="password" type="password" autocomplete="current-password" placeholder="Votre mot de passe" minlength="6" required></label>
+      <div id="error" class="error" role="alert"></div>
+      <button class="submit" id="submit" type="submit">Se connecter <span>→</span></button>
+    </form>
+    <p class="back"><a href="index.html">← Retour à DALZON BUILD</a></p>
+  </section>
+  <p class="legal">En continuant, vous acceptez les conditions d'utilisation de DALZON BUILD.</p>
+</main>
+<script src="auth.js"></script></body></html>
