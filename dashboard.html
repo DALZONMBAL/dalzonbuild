@@ -1,6 +1,32 @@
 <!DOCTYPE html>
 <html lang="fr"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Dashboard — DALZON BUILD</title><link rel="stylesheet" href="dashboard.css"></head>
-<body><header><a class="brand" href="index.html"><span>DB</span> DALZON <b>BUILD</b></a><a href="index.html">Accueil</a></header>
-<main><div class="welcome"><div><small>TABLEAU DE BORD</small><h1>Construisez votre présence en ligne.</h1><p>Créez, personnalisez et gérez tous vos sites depuis un seul espace.</p></div><button id="newSite">+ Nouveau site</button></div>
-<section class="stats"><div><b>0</b><span>Sites</span></div><div><b>0</b><span>Visiteurs</span></div><div><b>Free</b><span>Plan actuel</span></div></section>
-<section class="sites"><div class="section-title"><h2>Mes sites</h2><span>0 sites</span></div><div class="empty"><div class="empty-icon">＋</div><h3>Votre premier site commence ici.</h3><p>Choisissez un modèle professionnel et personnalisez-le sans coder.</p><button id="emptyNew">Créer mon premier site</button></div></section></main><script>document.querySelectorAll("#newSite,#emptyNew").forEach(b=>b.onclick=()=>alert("Le créateur de sites arrive à l'étape 3."));</script></body></html>
+<body><header><a class="brand" href="index.html"><span>DB</span> DALZON <b>BUILD</b></a><nav><a href="index.html">Accueil</a><button id="logout">Déconnexion</button></nav></header>
+<main><div class="welcome"><div><small>TABLEAU DE BORD</small><h1>Construisez votre présence en ligne.</h1><p id="welcomeText">Chargement de votre espace...</p></div><button id="newSite">+ Nouveau site</button></div>
+<section class="stats"><div><b id="siteCount">0</b><span>Sites</span></div><div><b>0</b><span>Visiteurs</span></div><div><b>Free</b><span>Plan actuel</span></div></section>
+<section class="sites"><div class="section-title"><h2>Mes sites</h2><span id="siteLabel">0 sites</span></div><div class="empty"><div class="empty-icon">＋</div><h3>Votre premier site commence ici.</h3><p>Choisissez un modèle professionnel et personnalisez-le sans coder.</p><button id="emptyNew">Créer mon premier site</button></div></section></main>
+<script src="supabase-config.js"></script>
+<script>
+const configured=window.DALZON_SUPABASE_URL&&!window.DALZON_SUPABASE_URL.includes("TON-PROJET")&&window.DALZON_SUPABASE_ANON_KEY&&!window.DALZON_SUPABASE_ANON_KEY.includes("TA_CLE");
+const token=localStorage.getItem("dalzon_access_token");
+async function api(path,options={}){
+  const response=await fetch(window.DALZON_SUPABASE_URL+path,{...options,headers:{apikey:window.DALZON_SUPABASE_ANON_KEY,Authorization:"Bearer "+token,...(options.headers||{})}});
+  const data=await response.json().catch(()=>null);
+  if(!response.ok) throw new Error(data?.message||data?.msg||"Erreur serveur");
+  return data;
+}
+async function init(){
+  if(!configured||!token){location.href="auth.html";return;}
+  try{
+    const user=await api("/auth/v1/user");
+    const name=user.user_metadata?.full_name||user.email?.split("@")[0]||"membre";
+    document.getElementById("welcomeText").textContent="Bienvenue "+name+". Créez, personnalisez et gérez tous vos sites depuis un seul espace.";
+    const sites=await api("/rest/v1/sites?select=id&order=created_at.desc");
+    const total=Array.isArray(sites)?sites.length:0;
+    document.getElementById("siteCount").textContent=total;
+    document.getElementById("siteLabel").textContent=total+" site"+(total>1?"s":"");
+  }catch(e){localStorage.clear();location.href="auth.html";}
+}
+document.getElementById("logout").onclick=()=>{localStorage.removeItem("dalzon_access_token");localStorage.removeItem("dalzon_refresh_token");location.href="auth.html";};
+document.querySelectorAll("#newSite,#emptyNew").forEach(b=>b.onclick=()=>alert("Le créateur de sites arrive à l'étape suivante."));
+init();
+</script></body></html>
