@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Paiement — DALZON BUILD</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;600;700&display=swap">
+<style>
+:root{--bg:#07111f;--panel:#0d1a2b;--text:#f5f8fc;--muted:#91a2b8;--line:rgba(255,255,255,.1);--accent:#5ee7d0}
+*{box-sizing:border-box}body{margin:0;min-height:100vh;background:radial-gradient(circle at 50% 0,rgba(94,231,208,.1),transparent 35%),var(--bg);color:var(--text);font-family:Inter,sans-serif;display:grid;place-items:center;padding:24px}
+.wrap{width:min(470px,100%)}.brand{text-align:center;font-family:"Space Grotesk";font-weight:800;font-size:20px;margin-bottom:25px}.brand span{color:var(--accent)}
+.card{background:rgba(13,26,43,.94);border:1px solid var(--line);border-radius:20px;padding:30px;box-shadow:0 30px 80px rgba(0,0,0,.35)}
+.eyebrow{font-size:9px;letter-spacing:2px;color:var(--accent);font-weight:800}.head{display:flex;justify-content:space-between;gap:20px;align-items:start}.price{font-family:"Space Grotesk";font-size:30px;font-weight:800}.plan{color:var(--muted);font-size:11px}.summary{margin:22px 0;border:1px solid var(--line);border-radius:12px;padding:15px;display:flex;justify-content:space-between}
+label{display:block;color:var(--muted);font-size:11px;margin:14px 0}input{width:100%;margin-top:7px;padding:13px;border-radius:9px;border:1px solid var(--line);background:#07111f;color:var(--text);outline:none;font:inherit}input:focus{border-color:var(--accent)}.row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+button{width:100%;margin-top:18px;border:0;border-radius:10px;padding:14px;background:var(--text);color:#07111f;font-weight:800;cursor:pointer}.back{display:block;text-align:center;margin-top:18px;color:var(--muted);font-size:11px;text-decoration:none}
+.notice{font-size:10px;color:var(--muted);line-height:1.5;margin-top:18px;text-align:center}.success{display:none;text-align:center}.success h2{font-family:"Space Grotesk"}.success p{color:var(--muted);font-size:12px}
+@media(max-width:430px){.card{padding:22px}}
+</style>
+</head>
+<body><div class="wrap"><div class="brand"><span>DB</span> DALZON BUILD</div>
+<div class="card">
+<div id="formView"><div class="eyebrow">PAIEMENT SÉCURISÉ</div><div class="head"><div><h1 id="planTitle" style="font-family:Space Grotesk;margin:8px 0 0;font-size:28px">Pro</h1><div class="plan">Abonnement mensuel</div></div><div class="price" id="price">$10.99</div></div>
+<div class="summary"><span>Formule choisie</span><strong id="summaryPlan">Pro</strong></div>
+<label>Nom sur la carte<input id="name" autocomplete="cc-name" placeholder="Nom complet"></label>
+<label>Numéro de carte<input id="number" inputmode="numeric" autocomplete="cc-number" placeholder="0000 0000 0000 0000" maxlength="19"></label>
+<div class="row"><label>Date d’expiration<input id="expiry" inputmode="numeric" autocomplete="cc-exp" placeholder="MM/AA" maxlength="5"></label><label>CVV<input id="cvv" inputmode="numeric" autocomplete="cc-csc" placeholder="000" maxlength="4"></label></div>
+<button id="pay">Payer maintenant</button><div id="error" style="color:#ff8d8d;font-size:11px;min-height:16px;margin-top:10px"></div>
+<div class="notice">Environnement de test : aucune carte réelle n’est débitée.</div></div>
+<div class="success" id="success"><div style="font-size:40px">✓</div><h2>Paiement accepté</h2><p>Votre formule a été activée pour cette session de test.</p><button onclick="location.href='dashboard.html'">Accéder au tableau de bord</button></div>
+</div><a class="back" href="index.html">← Retour à DALZON BUILD</a></div>
+<script>
+const plans={pro:{label:"Pro",price:"$10.99",limit:3},business:{label:"Business",price:"$22.42",limit:10},agency:{label:"Agency",price:"$50",limit:30}};
+const key=new URLSearchParams(location.search).get("plan")||"pro",p=plans[key]||plans.pro;
+planTitle.textContent=p.label;summaryPlan.textContent=p.label;price.textContent=p.price;
+number.addEventListener("input",e=>{let v=e.target.value.replace(/\D/g,"").slice(0,16);e.target.value=v.replace(/(.{4})/g,"$1 ").trim()});
+expiry.addEventListener("input",e=>{let v=e.target.value.replace(/\D/g,"").slice(0,4);e.target.value=v.length>2?v.slice(0,2)+"/"+v.slice(2):v});
+pay.onclick=()=>{error.textContent="";if(name.value.trim().length<2||number.value.replace(/\D/g,"").length<12||expiry.value.length<5||cvv.value.length<3){error.textContent="Vérifiez les informations saisies.";return}localStorage.setItem("dalzon_test_plan",JSON.stringify({plan:key,status:"active",at:Date.now()}));formView.style.display="none";success.style.display="block"};
+</script></body></html>
