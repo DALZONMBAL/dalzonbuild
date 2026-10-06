@@ -1,6 +1,7 @@
 // DALZON BUILD — Authentification Supabase
 const SUPABASE_URL = "https://gwrfnkfyelzdxdzfzexk.supabase.co";
 const SUPABASE_KEY = "sb_publishable_aSwwdf7DQpX84Or466Fdhw_TP16AIiN";
+const SITE_URL = "https://dalzonmbal.github.io/dalzonbuild";
 
 const form=document.getElementById("authForm"),title=document.getElementById("title"),subtitle=document.getElementById("subtitle"),nameWrap=document.getElementById("nameWrap"),submit=document.getElementById("submit"),error=document.getElementById("error");
 let mode=new URLSearchParams(location.search).get("mode")==="register"?"register":"login";
@@ -20,10 +21,7 @@ function setMode(next){
 document.querySelectorAll(".tab").forEach(tab=>tab.addEventListener("click",()=>setMode(tab.dataset.mode)));
 setMode(mode);
 
-function showError(message){
- error.textContent=message;
- error.dataset.keep="1";
-}
+function showError(message){ error.textContent=message; error.dataset.keep="1"; }
 
 async function authRequest(path,body){
  const response=await fetch(SUPABASE_URL+"/auth/v1/"+path,{
@@ -36,8 +34,6 @@ async function authRequest(path,body){
  return data;
 }
 
-// Retour après confirmation e-mail.
-// Supabase place normalement la session dans le fragment #access_token=...&refresh_token=...
 (function handleEmailConfirmation(){
  const hash=new URLSearchParams(location.hash.replace(/^#/,""));
  const accessToken=hash.get("access_token");
@@ -76,7 +72,7 @@ form.addEventListener("submit",async e=>{
     email,
     password,
     data:{full_name:name},
-    options:{emailRedirectTo:"https://www.dalzonbuild.com/auth.html"}
+    options:{emailRedirectTo:SITE_URL+"/auth.html"}
    });
 
    if(data.access_token){
@@ -95,9 +91,7 @@ form.addEventListener("submit",async e=>{
   }
  }catch(err){
   let message=err.message||"Une erreur est survenue.";
-  if(message.toLowerCase().includes("email not confirmed")){
-   message="Ton adresse e-mail n'est pas encore confirmée. Clique d'abord sur le lien reçu par e-mail.";
-  }
+  if(message.toLowerCase().includes("email not confirmed")) message="Ton adresse e-mail n'est pas encore confirmée. Clique d'abord sur le lien reçu par e-mail.";
   showError(message);
  }finally{
   submit.disabled=false;
