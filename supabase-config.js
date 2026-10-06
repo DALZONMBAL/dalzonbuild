@@ -1,5 +1,5 @@
 // DALZON BUILD — configuration Supabase
-// Remplace uniquement les deux valeurs ci-dessous par celles de ton projet Supabase.
+// Publishable key utilisée côté frontend.
 // Ne mets JAMAIS une clé service_role ici.
-window.DALZON_SUPABASE_URL = "https://TON-PROJET.supabase.co";
-window.DALZON_SUPABASE_ANON_KEY = "TA_CLE_ANON";
+window.DALZON_SUPABASE_URL = "https://gwrfnkfyelzdxdzfzexk.supabase.co";
+window.DALZON_SUPABASE_ANON_KEY = "sb_publishable_aSwwdf7DQpX84Or466Fdhw_TP16AIiN";
