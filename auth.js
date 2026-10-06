@@ -30,6 +30,19 @@ async function authRequest(path,body){
  return data;
 }
 
+// Après confirmation de l'e-mail, Supabase peut renvoyer la session dans le fragment de l'URL.
+(function handleEmailConfirmation(){
+ const hash=new URLSearchParams(location.hash.replace(/^#/,""));
+ const accessToken=hash.get("access_token");
+ const refreshToken=hash.get("refresh_token");
+ if(accessToken){
+  localStorage.setItem("dalzon_access_token",accessToken);
+  localStorage.setItem("dalzon_refresh_token",refreshToken||"");
+  history.replaceState(null,"",location.pathname+location.search);
+  location.href="dashboard.html";
+ }
+})();
+
 form.addEventListener("submit",async e=>{
  e.preventDefault(); error.textContent="";
  submit.disabled=true; submit.textContent=mode==="register"?"Création...":"Connexion...";
@@ -38,7 +51,7 @@ form.addEventListener("submit",async e=>{
   const password=document.getElementById("password").value;
   const name=document.getElementById("name").value.trim();
   if(mode==="register"){
-   const data=await authRequest("signup",{email,password,data:{full_name:name}});
+   const data=await authRequest("signup",{email,password,data:{full_name:name},options:{emailRedirectTo:"https://www.dalzonbuild.com/auth.html"}});
    if(data.access_token){
     localStorage.setItem("dalzon_access_token",data.access_token);
     localStorage.setItem("dalzon_refresh_token",data.refresh_token||"");
