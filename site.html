@@ -25,7 +25,7 @@ body.template-business .hero{max-width:1250px;margin:auto}
 <script src="supabase-config.js?v=20261007-1"></script>
 <script>
 const id=new URLSearchParams(location.search).get("id");
-async function load(){
+async function recordPageview(siteId){try{await fetch(SUPABASE_URL+"/rest/v1/site_events",{method:"POST",headers:{apikey:SUPABASE_KEY,"Content-Type":"application/json",Prefer:"return=minimal"},body:JSON.stringify({site_id:siteId,event_type:"pageview",page_path:location.pathname+location.search,referrer:document.referrer||null})})}catch(e){}}\nasync function load(){
  if(!id){document.getElementById("app").innerHTML="<section class='hero'><h1>Site introuvable</h1><p>Identifiant de site manquant.</p></section>";return}
  try{
   const r=await fetch(window.DALZON_SUPABASE_URL+"/rest/v1/sites?id=eq."+encodeURIComponent(id)+"&select=*",{headers:{apikey:window.DALZON_SUPABASE_ANON_KEY}});
