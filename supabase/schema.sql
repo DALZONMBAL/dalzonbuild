@@ -79,3 +79,25 @@ create policy "Users can create their own subscription" on public.subscriptions 
 create or replace function public.set_subscriptions_updated_at() returns trigger language plpgsql as $$ begin new.updated_at=now(); return new; end; $$;
 drop trigger if exists subscriptions_updated_at on public.subscriptions;
 create trigger subscriptions_updated_at before update on public.subscriptions for each row execute function public.set_subscriptions_updated_at();
+
+
+-- DALZON BUILD — analytics anonymisées
+create table if not exists public.site_events (
+  id uuid primary key default gen_random_uuid(),
+  site_id uuid not null references public.sites(id) on delete cascade,
+  event_type text not null default 'pageview' check (event_type in ('pageview')),
+  page_path text,
+  referrer text,
+  created_at timestamptz not null default now()
+);
+create index if not exists site_events_site_id_idx on public.site_events(site_id);
+create index if not exists site_events_created_at_idx on public.site_events(created_at desc);
+alter table public.site_events enable row level security;
+drop policy if exists "Public can record page views for published sites" on public.site_events;
+drop policy if exists "Owners can view analytics for their sites" on public.site_events;
+create policy "Public can record page views for published sites"
+on public.site_events for insert to anon, authenticated
+with check (event_type = 'pageview' and exists (select 1 from public.sites s where s.id = site_id and s.status = 'published'));
+create policy "Owners can view analytics for their sites"
+on public.site_events for select to authenticated
+using (exists (select 1 from public.sites s where s.id = site_id and s.user_id = auth.uid()));
